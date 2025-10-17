@@ -75,6 +75,50 @@
             height: 100%;
             object-fit: contain;
             padding: 20px;
+            cursor: zoom-in;
+            transition: transform 0.3s ease;
+        }
+
+        /* Overlay for enlarged image */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            display: none; /* shown via .open */
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 9999;
+            cursor: zoom-out;
+            padding: 20px;
+        }
+
+        .overlay.open {
+            display: flex;
+        }
+
+        .overlay img {
+            /* ensure the image is visible and can be scaled */
+            max-width: 90vw;
+            max-height: 90vh;
+            width: auto;
+            height: auto;
+            transition: transform 0.25s ease;
+            transform-origin: center center;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+            border-radius: 8px;
+            background: white;
+        }
+
+        /* When zoomed we apply a 2x scale on the overlay image */
+        .overlay.zoomed img {
+            transform: scale(2);
+        }
+
+        /* Small screen adjustment so scaled image can still be usable */
+        @media (max-width: 480px) {
+            .overlay.zoomed img {
+                transform: scale(1.6); /* a bit smaller on very small screens */
+            }
         }
     </style>
 </head>
@@ -86,7 +130,7 @@
             Ви НЕ можете називати предмет. Ви НЕ можете називати синоніми, чи на що він схожий.<br>
             Ви МОЖЕТЕ описувати предмет геометричними формами.<br>
             <br>
-            <strong>Наприклад:</strong> по центру намалюйте трикутник рівнобічний, один кут внизу, два вверху. Від середини трикутника проведіть лінію перпендикулярно вгору....<br>
+            <strong>Наприклад:</strong> по центру намалюйте трикутник рівнобічний, один кут внизу, два вверху. Від середин�[...]
             <br>
             Кольори не важливі, про них не говоримо.
         </div>
@@ -109,5 +153,80 @@
             </div>
         </div>
     </div>
+
+    <!-- Overlay used to show enlarged image -->
+    <div id="overlay" class="overlay" aria-hidden="true" role="dialog">
+        <img id="overlay-img" src="" alt="">
+    </div>
+
+    <script>
+        (function () {
+            const overlay = document.getElementById('overlay');
+            const overlayImg = document.getElementById('overlay-img');
+
+            // multiplier: change this to adjust how much bigger image becomes (2 = double)
+            const SCALE_MULTIPLIER = 2;
+
+            // set transform based on multiplier and small-screen adjustments handled by CSS media query
+            function applyZoomClass() {
+                // For multiplier 2 we use .zoomed class; other multipliers can be handled by inline style if needed
+                overlay.classList.add('zoomed');
+            }
+
+            function clearZoomClass() {
+                overlay.classList.remove('zoomed');
+            }
+
+            // Open overlay with clicked image
+            document.querySelectorAll('.card img').forEach(img => {
+                img.addEventListener('click', (e) => {
+                    const src = e.currentTarget.src;
+                    const alt = e.currentTarget.alt || '';
+                    overlayImg.src = src;
+                    overlayImg.alt = alt;
+                    overlay.classList.add('open');
+                    overlay.setAttribute('aria-hidden', 'false');
+
+                    // Force a tiny delay so CSS transition can run predictably
+                    requestAnimationFrame(() => {
+                        // If SCALE_MULTIPLIER !== 2 and you want different scaling, you can set inline transform:
+                        if (SCALE_MULTIPLIER === 2) {
+                            applyZoomClass();
+                        } else {
+                            // fallback: set inline transform to required scale
+                            overlayImg.style.transform = 'scale(' + SCALE_MULTIPLIER + ')';
+                        }
+                    });
+                });
+            });
+
+            // Close overlay on click anywhere on overlay or on Esc key
+            overlay.addEventListener('click', () => {
+                closeOverlay();
+            });
+
+            function closeOverlay() {
+                clearZoomClass();
+                overlayImg.style.transform = '';
+                overlay.classList.remove('open');
+                overlay.setAttribute('aria-hidden', 'true');
+                // clear src after transition to free memory
+                setTimeout(() => overlayImg.src = '', 300);
+            }
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && overlay.classList.contains('open')) {
+                    closeOverlay();
+                }
+            });
+
+            // Prevent click on the image itself from triggering other handlers
+            overlayImg.addEventListener('click', (e) => {
+                e.stopPropagation();
+                // clicking the image also closes (acts like toggle) — if you prefer to not close on image click, remove closeOverlay() here
+                closeOverlay();
+            });
+        })();
+    </script>
 </body>
 </html>
