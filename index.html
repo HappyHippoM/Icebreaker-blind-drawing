@@ -1,156 +1,167 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Намалюй під диктовку</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background-color: #ffffff; font-family: 'Arial', sans-serif; padding: 40px 20px; min-height: 100vh; }
-        .container { max-width: 1200px; margin: 0 auto; }
-        h1 { text-align: center; font-size: 48px; color: #333; margin-bottom: 15px; font-weight: 700; letter-spacing: 1px; }
-        .subtitle { text-align: center; font-size: 16px; color: #666; margin-bottom: 30px; line-height: 1.6; max-width: 900px; margin-left: auto; margin-right: auto; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; padding: 20px; }
-        .card { aspect-ratio: 1 / 1; background-color: #f5f5f5; border: 2px solid #e0e0e0; border-radius: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; transition: all 0.2s ease; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 20px rgba(0,0,0,0.08); border-color: #4a90e2; }
-        .card svg { width: 100%; height: 100%; padding: 20px; box-sizing: content-box; }
-        .overlay { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.6); z-index: 9999; cursor: zoom-out; padding: 20px; }
-        .overlay.open { display: flex; }
-        #overlay-content { max-width: 90vw; max-height: 90vh; display: flex; align-items: center; justify-content: center; }
-        #overlay-content svg { width: auto; height: auto; max-width: 90vw; max-height: 90vh; transition: transform 0.25s ease; transform-origin: center center; box-shadow: 0 8px 30px rgba(0,0,0,0.6); border-radius: 8px; background: white; }
-        .overlay.zoomed #overlay-content svg { transform: scale(2); }
-        @media (max-width: 480px) { .overlay.zoomed #overlay-content svg { transform: scale(1.6); } }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #f8bc00;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .rules {
+            text-align: center;
+            margin-bottom: 40px;
+            line-height: 1.6;
+            font-size: 1.1em;
+        }
+
+        .rules strong {
+            color: #c00;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .image-card {
+            text-align: center;
+        }
+
+        .image-card h2 {
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .image-wrapper {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .image-wrapper:hover {
+            transform: scale(1.05);
+        }
+
+        .image-wrapper img {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 4px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal img {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 8px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Намалюй під диктовку</h1>
-        <div class="subtitle">
-            <strong>Правила:</strong><br>
-            Ви НЕ можете називати предмет. Ви НЕ можете називати синоніми, чи на що він схожий.<br>
-            Ви МОЖЕТЕ описувати предмет геометричними формами.<br>
-            <br>
-            Нижче — картинки, складені з простих геометричних фігур (4–5 елементів кожна). Клікайте, щоб збільшити!
+        <div class="rules">
+            <strong>Правила:</strong> Ви <strong>НЕ можете</strong> називати предмет. Ви <strong>НЕ можете</strong> називати синоніми, чи на що він схожий. Ви <strong>МОЖЕТЕ</strong> описувати предмет геометричними формами.
         </div>
 
         <div class="grid">
-            <!-- Sailboat: semicircle (hull), triangle (sail), rectangle (mast/boat base), line (water) -->
-            <div class="card" title="Кораблик-парусник">
-                <svg viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                    <rect width="240" height="240" fill="none"/>
-                    <!-- water line -->
-                    <line x1="0" y1="190" x2="240" y2="190" stroke="#64b5f6" stroke-width="6" stroke-linecap="round" />
-                    <!-- hull: semicircle using path -->
-                    <path d="M40 185 A80 40 0 0 0 200 185 L200 185 L40 185 Z" fill="#ffcc80" stroke="#e68900" stroke-width="4" />
-                    <!-- mast: rectangle -->
-                    <rect x="116" y="80" width="8" height="90" fill="#8d6e63" />
-                    <!-- sail: triangle -->
-                    <polygon points="120,85 120,165 175,130" fill="#90caf9" stroke="#2b8af0" stroke-width="3" />
-                </svg>
+            <div class="image-card">
+                <h2>Група 1</h2>
+                <div class="image-wrapper" onclick="openModal('img1')">
+                    <img id="img1" src="image1.png" alt="Група 1">
+                </div>
             </div>
 
-            <!-- Ice cream: triangle (cone) + 3 circles (scoops) + rectangle (cookie on top) -->
-            <div class="card" title="Морозиво">
-                <svg viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                    <rect width="240" height="240" fill="none"/>
-                    <!-- cone: inverted triangle -->
-                    <polygon points="120,140 90,200 150,200" fill="#ffcc80" stroke="#e68a00" stroke-width="3" />
-                    <!-- scoops: three circles of different sizes -->
-                    <circle cx="120" cy="110" r="28" fill="#f48fb1" stroke="#d63e6a" stroke-width="3" />
-                    <circle cx="100" cy="86" r="20" fill="#fff59d" stroke="#f0c000" stroke-width="2" />
-                    <circle cx="140" cy="86" r="22" fill="#a5d6a7" stroke="#4caf50" stroke-width="2" />
-                    <!-- cookie/rect on top -->
-                    <rect x="96" y="62" width="48" height="12" rx="2" ry="2" fill="#d7ccc8" stroke="#8d6e63" stroke-width="2" transform="rotate(-12 120 68)" />
-                </svg>
+            <div class="image-card">
+                <h2>Група 2</h2>
+                <div class="image-wrapper" onclick="openModal('img2')">
+                    <img id="img2" src="image2.png" alt="Група 2">
+                </div>
             </div>
 
-            <!-- Lightbulb: circle (bulb) + rectangle (base) + triangle (filament element) + lines (rays) -->
-            <div class="card" title="Лампочка">
-                <svg viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                    <rect width="240" height="240" fill="none"/>
-                    <!-- bulb circle -->
-                    <circle cx="120" cy="90" r="44" fill="#fff59d" stroke="#f0c000" stroke-width="4" />
-                    <!-- base rectangle -->
-                    <rect x="102" y="130" width="36" height="32" fill="#bdbdbd" stroke="#757575" stroke-width="3" rx="4" />
-                    <!-- filament: small triangle inside bulb -->
-                    <polygon points="110,96 120,116 130,96" fill="#ff8a65" stroke="#d84315" stroke-width="3" />
-                    <!-- rays: lines -->
-                    <g stroke="#f0c000" stroke-width="4" stroke-linecap="round">
-                        <line x1="120" y1="20" x2="120" y2="46" />
-                        <line x1="40" y1="80" x2="66" y2="94" />
-                        <line x1="200" y1="80" x2="174" y2="94" />
-                        <line x1="70" y1="30" x2="88" y2="56" />
-                        <line x1="170" y1="30" x2="152" y2="56" />
-                    </g>
-                </svg>
+            <div class="image-card">
+                <h2>Група 3</h2>
+                <div class="image-wrapper" onclick="openModal('img3')">
+                    <img id="img3" src="image3.png" alt="Група 3">
+                </div>
             </div>
 
-            <!-- Pencil: rectangles (body, ferrule), triangle (tip), semicircle (eraser) -->
-            <div class="card" title="Олівець">
-                <svg viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                    <rect width="240" height="240" fill="none"/>
-                    <!-- pencil body: long rectangle rotated -->
-                    <g transform="translate(0,0)">
-                        <rect x="60" y="60" width="120" height="36" fill="#ffcc80" stroke="#e68a00" stroke-width="3" rx="4" ry="4" transform="rotate(-20 120 78)" />
-                        <!-- ferrule: small rectangle near eraser -->
-                        <rect x="150" y="46" width="34" height="18" fill="#bdbdbd" stroke="#8e8e8e" stroke-width="2" transform="rotate(-20 167 55)" />
-                        <!-- eraser: semicircle -->
-                        <path d="M190 54 a12 12 0 0 1 24 0 v0 a12 12 0 0 1 -24 0 z" fill="#ff8a80" stroke="#d84315" stroke-width="2" transform="rotate(-20 202 60)" />
-                        <!-- tip: triangle -->
-                        <polygon points="53,90 72,78 70,96" fill="#6d4c41" stroke="#4b2e20" stroke-width="2" transform="rotate(-20 120 78)" />
-                        <!-- sharpened cone overlay (triangle) -->
-                        <polygon points="70,96 88,86 72,78" fill="#ffd54a" stroke="#e6ad00" stroke-width="2" transform="rotate(-20 120 78)" />
-                    </g>
-                </svg>
+            <div class="image-card">
+                <h2>Група 4</h2>
+                <div class="image-wrapper" onclick="openModal('img4')">
+                    <img id="img4" src="image4.png" alt="Група 4">
+                </div>
             </div>
-
         </div>
     </div>
 
-    <!-- Overlay used to show enlarged SVG -->
-    <div id="overlay" class="overlay" aria-hidden="true" role="dialog">
-        <div id="overlay-content" aria-hidden="false"></div>
+    <div class="modal" id="modal" onclick="closeModal()">
+        <img id="modalImg" src="" alt="Збільшена картинка">
     </div>
 
     <script>
-    (function () {
-        const overlay = document.getElementById('overlay');
-        const overlayContent = document.getElementById('overlay-content');
-
-        document.addEventListener('click', (e) => {
-            const card = e.target.closest('.card');
-            if (!card) return;
-            const svg = card.querySelector('svg');
-            if (!svg) return;
-
-            const clone = svg.cloneNode(true);
-            clone.removeAttribute('id');
-            overlayContent.innerHTML = '';
-            overlayContent.appendChild(clone);
-
-            overlay.classList.add('open');
-            requestAnimationFrame(() => overlay.classList.add('zoomed'));
-            overlay.setAttribute('aria-hidden', 'false');
-        });
-
-        overlay.addEventListener('click', (e) => {
-            if (e.target !== overlay) return;
-            closeOverlay();
-        });
-
-        function closeOverlay() {
-            overlay.classList.remove('zoomed');
-            setTimeout(() => {
-                overlay.classList.remove('open');
-                overlayContent.innerHTML = '';
-                overlay.setAttribute('aria-hidden', 'true');
-            }, 220);
+        function openModal(imgId) {
+            const img = document.getElementById(imgId);
+            const modal = document.getElementById('modal');
+            const modalImg = document.getElementById('modalImg');
+            
+            modalImg.src = img.src;
+            modal.classList.add('active');
         }
 
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && overlay.classList.contains('open')) closeOverlay();
+        function closeModal() {
+            const modal = document.getElementById('modal');
+            modal.classList.remove('active');
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
         });
-    })();
     </script>
 </body>
 </html>
